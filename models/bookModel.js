@@ -15,7 +15,11 @@ const bookSchema = new mongoose.Schema({
             ref: 'User'
         },
         score: Number
-    }]
+    }],
+    isBorrowed: {
+        type: Boolean,
+        default: false
+    }
 });
 
 const Book = mongoose.model('Book', bookSchema);

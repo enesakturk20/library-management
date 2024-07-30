@@ -43,11 +43,17 @@ const createUser = async (req, res) => {
 const borrowBook = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
+        const book = await Book.findById(req.params.bookId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
+        if (book.isBorrowed) {
+            return res.status(400).json({ message: 'This book is already borrowed by another user.' });
+        }
         user.books.present.push(req.params.bookId);
+        book.isBorrowed = true;
         await user.save();
+        await book.save();
         res.status(200).json({ message: "The book has been borrowed successfully" });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -95,6 +101,9 @@ const returnBook = async (req, res) => {
         // Yeni kitap skorunu hesapla
         const totalScore = book.ratings.reduce((acc, r) => acc + r.score, 0);
         book.score = totalScore / book.ratings.length;
+
+        book.isBorrowed = false;
+
         await book.save();
 
         res.status(200).json({ message: "The book was returned successfully" });
